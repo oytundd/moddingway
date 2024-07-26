@@ -63,7 +63,7 @@ func (d *Discord) Ban(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if err != nil {
 			fmt.Printf("Unable to send ephemeral message: %v\n", err)
 		}
-		
+
 		return
 	}
 
@@ -93,7 +93,7 @@ func (d *Discord) Ban(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if err != nil {
 			fmt.Printf("Unable to send ephemeral message: %v\n", err)
 		}
-		
+
 		return
 	}
 }
@@ -104,7 +104,7 @@ func (d *Discord) Ban(s *discordgo.Session, i *discordgo.InteractionCreate) {
 //	user:		User
 //	reason:		string
 func (d *Discord) Unban(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // RemoveNickname attempts to remove the currently set nickname on the specified user
@@ -114,7 +114,7 @@ func (d *Discord) Unban(s *discordgo.Session, i *discordgo.InteractionCreate) {
 //	user:		User
 //	reason:		string
 func (d *Discord) RemoveNickname(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // SetNickname attempts to set the nickname of the specified user in the server
@@ -125,7 +125,7 @@ func (d *Discord) RemoveNickname(s *discordgo.Session, i *discordgo.InteractionC
 //	nickname:	string
 //	reason:		string
 func (d *Discord) SetNickname(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // Slowmode attempts to set the current channel to slowmode.
@@ -133,12 +133,12 @@ func (d *Discord) SetNickname(s *discordgo.Session, i *discordgo.InteractionCrea
 //
 //	duration:	string
 func (d *Discord) Slowmode(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // SlowmodeOff attempts to remove slowmode from the current channel.
 func (d *Discord) SlowmodeOff(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // Purge attempts to remove the last message-number messages from the specified channel.
@@ -147,7 +147,7 @@ func (d *Discord) SlowmodeOff(s *discordgo.Session, i *discordgo.InteractionCrea
 //	channel:		Channel
 //	message-number:		integer
 func (d *Discord) Purge(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // Exile attempts to add the exile role to the user, effectively soft-banning them.
@@ -316,7 +316,7 @@ func (d *Discord) SetModLoggingChannel(s *discordgo.Session, i *discordgo.Intera
 //	user:		User
 //	reason:		string
 func (d *Discord) Strike(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // ClearStrikes attempts to clear all strikes for a user.
@@ -324,7 +324,7 @@ func (d *Discord) Strike(s *discordgo.Session, i *discordgo.InteractionCreate) {
 //
 //	user:		User
 func (d *Discord) ClearStrikes(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // DeleteStrike attempts to delete a strike from a user.
@@ -332,7 +332,7 @@ func (d *Discord) ClearStrikes(s *discordgo.Session, i *discordgo.InteractionCre
 //
 //	warning_id:	integer
 func (d *Discord) DeleteStrike(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // ShowAllStrikes attempts to show all strikes for a user.
@@ -340,5 +340,26 @@ func (d *Discord) DeleteStrike(s *discordgo.Session, i *discordgo.InteractionCre
 //
 //	user:		User
 func (d *Discord) ShowAllStrikes(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
+}
+
+// SetFilter marks a channel to filter messages, meant to designate a channel for PF posting
+// fields:
+//
+// channelID:	string
+func (d *Discord) SetFilter(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	// TODO we need to persist the channel ID somewhere, so this doesn't need to be set
+	// every time the bot is spun up
+	// or we hard code it if its not likely to change
+	options := i.ApplicationCommandData().Options
+	channelID := options[0].ChannelValue(nil).ID
+
+	tempstr := fmt.Sprintf("Set the filtered channel to: %v\n", channelID)
+
+	err := StartInteraction(s, i.Interaction, tempstr)
+	if err != nil {
+		fmt.Printf("Unable to send ephemeral message: %v\n", err)
+	}
+
+	fmt.Printf("Set the filtered channel to: %v\n", channelID)
 }

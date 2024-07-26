@@ -52,8 +52,9 @@ func (d *Discord) AddCommands(s *discordgo.Session, event *discordgo.Ready) {
 				// ClearStrikesCommand,
 				// DeleteStrikeCommand,
 				// ShowAllStrikesCommand,
+				SetFilterCommand,
 			)
-	
+
 			fmt.Printf("Adding commands...\n")
 			commandList, err := s.ApplicationCommandBulkOverwrite(event.User.ID, discordGuild.ID, commands)
 			fmt.Printf("List of successfully created commands:\n")
@@ -699,6 +700,20 @@ var ShowAllStrikesCommand = &discordgo.ApplicationCommand{
 	},
 }
 
+var SetFilterCommand = &discordgo.ApplicationCommand{
+	Name:                     "setfilter",
+	DefaultMemberPermissions: &adminPermission,
+	Description:              "Sets the channel that will be filtered.",
+	Options: []*discordgo.ApplicationCommandOption{
+		{
+			Type:        discordgo.ApplicationCommandOptionChannel,
+			Name:        "channel",
+			Description: "Channel that will be filtered",
+			Required:    true,
+		},
+	},
+}
+
 // InteractionCreate executes the respective function based on what
 // slash command was used
 func (d *Discord) InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -735,6 +750,8 @@ func (d *Discord) InteractionCreate(s *discordgo.Session, i *discordgo.Interacti
 		d.DeleteStrike(s, i)
 	case "strikes":
 		d.ShowAllStrikes(s, i)
+	case "setfilter":
+		d.SetFilter(s, i)
 	}
 }
 
