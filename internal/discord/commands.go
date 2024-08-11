@@ -3,6 +3,7 @@ package discord
 import (
 	"fmt"
 	"time"
+	"log"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/naurffxiv/moddingway/internal/database"
@@ -59,13 +60,13 @@ func (d *Discord) Ban(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	_, err := d.GetUserInGuild(state.interaction.GuildID, userToBan)
 	if err != nil {
 		tempstr := fmt.Sprintf("Could not ban user <@%v>", userToBan)
-		fmt.Printf("%v: %v\n", tempstr, err)
+		log.Printf("%v: %v\n", tempstr, err)
 
 		err = RespondToInteraction(state.session, state.interaction.Interaction, tempstr, &state.isFirst)
 		if err != nil {
-			fmt.Printf("Unable to send ephemeral message: %v\n", err)
+			log.Printf("Unable to send ephemeral message: %v\n", err)
 		}
-		
+
 		return
 	}
 
@@ -82,7 +83,7 @@ func (d *Discord) Ban(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		err = d.Session.GuildBanCreateWithReason(i.GuildID, userToBan, optionMap["reason"].StringValue(), 0)
 		if err != nil {
 			tempstr := fmt.Sprintf("Unable to ban user <@%v>", userToBan)
-			fmt.Printf("%v: %v\n", tempstr, err)
+			log.Printf("%v: %v\n", tempstr, err)
 			RespondAndAppendLog(state, tempstr)
 			d.EditLogMsg(logMsg)
 			return
@@ -93,9 +94,9 @@ func (d *Discord) Ban(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	} else {
 		err = RespondToInteraction(s, i.Interaction, "Please provide a reason for the ban.", &state.isFirst)
 		if err != nil {
-			fmt.Printf("Unable to send ephemeral message: %v\n", err)
+			log.Printf("Unable to send ephemeral message: %v\n", err)
 		}
-		
+
 		return
 	}
 }
@@ -106,7 +107,7 @@ func (d *Discord) Ban(s *discordgo.Session, i *discordgo.InteractionCreate) {
 //	user:		User
 //	reason:		string
 func (d *Discord) Unban(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // RemoveNickname attempts to remove the currently set nickname on the specified user
@@ -116,7 +117,7 @@ func (d *Discord) Unban(s *discordgo.Session, i *discordgo.InteractionCreate) {
 //	user:		User
 //	reason:		string
 func (d *Discord) RemoveNickname(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // SetNickname attempts to set the nickname of the specified user in the server
@@ -127,7 +128,7 @@ func (d *Discord) RemoveNickname(s *discordgo.Session, i *discordgo.InteractionC
 //	nickname:	string
 //	reason:		string
 func (d *Discord) SetNickname(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // Slowmode attempts to set the current channel to slowmode.
@@ -135,12 +136,12 @@ func (d *Discord) SetNickname(s *discordgo.Session, i *discordgo.InteractionCrea
 //
 //	duration:	string
 func (d *Discord) Slowmode(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // SlowmodeOff attempts to remove slowmode from the current channel.
 func (d *Discord) SlowmodeOff(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // Purge attempts to remove the last message-number messages from the specified channel.
@@ -149,7 +150,7 @@ func (d *Discord) SlowmodeOff(s *discordgo.Session, i *discordgo.InteractionCrea
 //	channel:		Channel
 //	message-number:		integer
 func (d *Discord) Purge(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // Exile attempts to add the exile role to the user, effectively soft-banning them.
@@ -212,27 +213,27 @@ func (d *Discord) Exile(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		dbUserID, err := database.GetUser(d.Conn, userToExile.ID, i.GuildID)
 		if err != nil {
-			fmt.Println("User not found in database, adding user...")
+			log.Println("User not found in database, adding user...")
 			dbUserID, err = database.AddUser(d.Conn, userToExile.ID, i.GuildID)
 			if err != nil {
 				tempstr = fmt.Sprintf("Unable to add user <@%v> to the database", userToExile.ID)
-				fmt.Printf("%v: %v\n", tempstr, err)
+				log.Printf("%v: %v\n", tempstr, err)
 				RespondAndAppendLog(state, tempstr)
 				return
 			}
 		}
 
 		exileEntryArgs := database.AddExileEntryArgs{
-			DbUserID: dbUserID,
-			Reason: optionMap["reason"].StringValue(),
+			DbUserID:    dbUserID,
+			Reason:      optionMap["reason"].StringValue(),
 			ExileStatus: enum.TimedExile,
-			StartTime: startTime.UTC().Format(time.RFC3339),
-			EndTime: endTime.UTC().Format(time.RFC3339),
+			StartTime:   startTime.UTC().Format(time.RFC3339),
+			EndTime:     endTime.UTC().Format(time.RFC3339),
 		}
 		exileID, err := database.AddExileEntryTimed(d.Conn, exileEntryArgs)
 		if err != nil {
 			tempstr = "Unable to add entry to the database"
-			fmt.Printf("%v: %v\n", tempstr, err)
+			log.Printf("%v: %v\n", tempstr, err)
 			RespondAndAppendLog(state, tempstr)
 			return
 		}
@@ -257,21 +258,21 @@ func (d *Discord) Exile(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		dbUserID, err := database.GetUser(d.Conn, userToExile.ID, i.GuildID)
 		if err != nil {
-			fmt.Println("User not found in database, adding user...")
+			log.Println("User not found in database, adding user...")
 			dbUserID, err = database.AddUser(d.Conn, userToExile.ID, i.GuildID)
 			if err != nil {
 				tempstr = fmt.Sprintf("Unable to add user <@%v> to the database", userToExile.ID)
-				fmt.Printf("%v: %v\n", tempstr, err)
+				log.Printf("%v: %v\n", tempstr, err)
 				RespondAndAppendLog(state, tempstr)
 				return
 			}
 		}
 
 		exileEntryArgs := database.AddExileEntryArgs{
-			DbUserID: dbUserID,
-			Reason: optionMap["reason"].StringValue(),
+			DbUserID:    dbUserID,
+			Reason:      optionMap["reason"].StringValue(),
 			ExileStatus: enum.IndefiniteExile,
-			StartTime: startTime.UTC().Format(time.RFC3339),
+			StartTime:   startTime.UTC().Format(time.RFC3339),
 		}
 		exileID, err := database.AddExileEntryIndefinite(d.Conn, exileEntryArgs)
 		if err != nil {
@@ -327,11 +328,11 @@ func (d *Discord) Unexile(s *discordgo.Session, i *discordgo.InteractionCreate) 
 		return
 	}
 	logMsg.Embeds[0].Footer = &discordgo.MessageEmbedFooter{Text: fmt.Sprintf("Exile ID: %v", exileID)}
-	
+
 	err = database.RemoveExileEntry(d.Conn, exileID)
 	if err != nil {
 		tempstr := fmt.Sprintf("Unable to remove exile ID %v", exileID)
-		fmt.Printf("%v: %v\n", tempstr, err)
+		log.Printf("%v: %v\n", tempstr, err)
 		RespondAndAppendLog(state, tempstr)
 		return
 	}
@@ -361,9 +362,9 @@ func (d *Discord) SetModLoggingChannel(s *discordgo.Session, i *discordgo.Intera
 
 	err := StartInteraction(s, i.Interaction, tempstr)
 	if err != nil {
-		fmt.Printf("Unable to send ephemeral message: %v\n", err)
+		log.Printf("Unable to send ephemeral message: %v\n", err)
 	}
-	fmt.Printf("Set the moderation logging channel to: %v\n", channelID)
+	log.Printf("Set the moderation logging channel to: %v\n", channelID)
 }
 
 // Strike attempts to give a user a strike.
@@ -372,7 +373,7 @@ func (d *Discord) SetModLoggingChannel(s *discordgo.Session, i *discordgo.Intera
 //	user:		User
 //	reason:		string
 func (d *Discord) Strike(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // ClearStrikes attempts to clear all strikes for a user.
@@ -380,7 +381,7 @@ func (d *Discord) Strike(s *discordgo.Session, i *discordgo.InteractionCreate) {
 //
 //	user:		User
 func (d *Discord) ClearStrikes(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // DeleteStrike attempts to delete a strike from a user.
@@ -388,7 +389,7 @@ func (d *Discord) ClearStrikes(s *discordgo.Session, i *discordgo.InteractionCre
 //
 //	warning_id:	integer
 func (d *Discord) DeleteStrike(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }
 
 // ShowAllStrikes attempts to show all strikes for a user.
@@ -396,5 +397,5 @@ func (d *Discord) DeleteStrike(s *discordgo.Session, i *discordgo.InteractionCre
 //
 //	user:		User
 func (d *Discord) ShowAllStrikes(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	
+
 }

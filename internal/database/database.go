@@ -3,9 +3,11 @@ package database
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
 type DbInfo struct {
 	Host     string
 	Port     string
@@ -17,12 +19,12 @@ type DbInfo struct {
 func ConnectToDatabase(p DbInfo) *pgxpool.Pool {
 	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", p.User, p.Password, p.Host, p.Port, p.DbName)
 
-	fmt.Printf("Connecting to database...\n")
+	log.Printf("Connecting to database...\n")
 	conn, err := pgxpool.New(context.Background(), dbUrl)
 	if err != nil {
 		tempstr := fmt.Sprintf("Unable to connect to database: %v\n", err)
-		panic(tempstr)
+		log.Panic(tempstr)
 	}
-	
+
 	return conn
 }
