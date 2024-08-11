@@ -2,10 +2,14 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/naurffxiv/moddingway/internal/database"
 	"github.com/naurffxiv/moddingway/internal/discord"
@@ -18,6 +22,18 @@ func main() {
 	}
 
 	d := &discord.Discord{}
+
+	// configure logging
+	os.Mkdir("logs", os.ModePerm)
+	logFileName := fmt.Sprintf("log-%s.log", time.Now().Format("2006-01-02_15-04-05"))
+
+	logFile, _ := os.Create(filepath.Join("logs", logFileName))
+	defer logFile.Close()
+
+	multi := io.MultiWriter(logFile, os.Stdout)
+
+	log.SetOutput(multi)
+	log.Println("Logging configuration set")
 
 	discordToken := env.GetEnv("DISCORD_TOKEN")
 
@@ -36,22 +52,22 @@ func main() {
 	}
 
 	dbArgs := database.DbInfo{
-		Host: env.GetEnv("POSTGRES_HOST"),
-		Port: env.GetEnv("POSTGRES_PORT"),
-		User: env.GetEnv("POSTGRES_USER"),
+		Host:     env.GetEnv("POSTGRES_HOST"),
+		Port:     env.GetEnv("POSTGRES_PORT"),
+		User:     env.GetEnv("POSTGRES_USER"),
 		Password: env.GetEnv("POSTGRES_PASSWORD"),
-		DbName: env.GetEnv("POSTGRES_DB"),
+		DbName:   env.GetEnv("POSTGRES_DB"),
 	}
-	
-	if !env.Ok { 
-		panic(fmt.Errorf("You must supply a %s to start!", env.EnvName))
+
+	if !env.Ok {
+		log.Panicf("You must supply a %s to start!", env.EnvName)
 	}
 
 	d.Conn = database.ConnectToDatabase(dbArgs)
-	fmt.Printf("Starting Discord...\n")
+	log.Printf("Starting Discord...\n")
 	err := d.Start()
 	if err != nil {
-		panic(fmt.Errorf("Could not instantiate Discord: %w", err))
+		log.Panicf("Could not instantiate Discord: %w", err)
 	}
 	defer d.Session.Close()
 	start(d)
@@ -64,12 +80,12 @@ func start(d *discord.Discord) {
 	d.Session.AddHandler(d.DiscordReady)
 	err := d.Session.Open()
 	if err != nil {
-		panic(fmt.Errorf("Could not open Discord session: %f", err))
+		log.Panicf("Could not open Discord session: %f", err)
 	}
 
 	d.Ready.Wait()
 	d.Session.AddHandler(d.InteractionCreate)
-	fmt.Println("Moddingway is ready. Press CTRL+C to exit.")
+	log.Println("Moddingway is ready. Press CTRL+C to exit.")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
