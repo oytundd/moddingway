@@ -2,12 +2,12 @@ package discord
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
-	"log"
 
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/cases"
@@ -53,6 +53,7 @@ func (d *Discord) AddCommands(s *discordgo.Session, event *discordgo.Ready) {
 				// ClearStrikesCommand,
 				// DeleteStrikeCommand,
 				// ShowAllStrikesCommand,
+				DownloadLogsCommand,
 			)
 
 			log.Printf("Adding commands...\n")
@@ -700,6 +701,13 @@ var ShowAllStrikesCommand = &discordgo.ApplicationCommand{
 	},
 }
 
+var DownloadLogsCommand = &discordgo.ApplicationCommand{
+	Name:                     "logs",
+	DefaultMemberPermissions: &adminPermission,
+	Description:              "Downloads log file from current application",
+	Options:                  []*discordgo.ApplicationCommandOption{},
+}
+
 // InteractionCreate executes the respective function based on what
 // slash command was used
 func (d *Discord) InteractionCreate(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -736,6 +744,8 @@ func (d *Discord) InteractionCreate(s *discordgo.Session, i *discordgo.Interacti
 		d.DeleteStrike(s, i)
 	case "strikes":
 		d.ShowAllStrikes(s, i)
+	case "logs":
+		d.DownloadLogs(s, i)
 	}
 }
 

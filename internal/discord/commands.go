@@ -2,8 +2,10 @@ package discord
 
 import (
 	"fmt"
-	"time"
 	"log"
+	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/naurffxiv/moddingway/internal/database"
@@ -398,4 +400,32 @@ func (d *Discord) DeleteStrike(s *discordgo.Session, i *discordgo.InteractionCre
 //	user:		User
 func (d *Discord) ShowAllStrikes(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
+}
+
+// DownloadLogs downloads the logs for the running application
+func (d *Discord) DownloadLogs(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	logFile, err := os.Open(filepath.Join("logs", "appLogs.log"))
+	if err != nil {
+		log.Panicf("Could not open log files: %w", err)
+	}
+	defer logFile.Close()
+
+	discordFile := &discordgo.File{
+		Name:        "logs.txt",
+		ContentType: "file",
+		Reader:      logFile,
+	}
+
+	erro := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "Logs found for the current pod",
+			Flags:   discordgo.MessageFlagsEphemeral,
+			Files:   []*discordgo.File{discordFile},
+		},
+	})
+
+	if erro != nil {
+		log.Panicf("Could not send log dump: %w", err)
+	}
 }

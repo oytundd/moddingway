@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -9,7 +8,6 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
-	"time"
 
 	"github.com/naurffxiv/moddingway/internal/database"
 	"github.com/naurffxiv/moddingway/internal/discord"
@@ -25,13 +23,9 @@ func main() {
 
 	// configure logging
 	os.Mkdir("logs", os.ModePerm)
-	logFileName := fmt.Sprintf("log-%s.log", time.Now().Format("2006-01-02_15-04-05"))
-
-	logFile, _ := os.Create(filepath.Join("logs", logFileName))
+	logFile, _ := os.Create(filepath.Join("logs", "appLogs.log"))
 	defer logFile.Close()
-
 	multi := io.MultiWriter(logFile, os.Stdout)
-
 	log.SetOutput(multi)
 	log.Println("Logging configuration set")
 
