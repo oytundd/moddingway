@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
-	"log"
 
 	"github.com/naurffxiv/moddingway/internal/database"
 	"github.com/naurffxiv/moddingway/internal/discord"
