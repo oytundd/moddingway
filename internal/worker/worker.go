@@ -90,7 +90,7 @@ func startDiscord(d *discord.Discord) {
 
 	err := d.Start()
 	if err != nil {
-		log.Panicf("Could not instantiate Discord: %w", err)
+		log.Panic(fmt.Errorf("Could not instantiate Discord: %w", err))
 	}
 
 	d.Ready.Add(1)
