@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -22,7 +23,7 @@ func main() {
 	d := &discord.Discord{}
 
 	// configure logging
-	os.Mkdir("logs", os.ModePerm)
+	os.Mkdir("logs", os.ModePerm) //nolint:errcheck
 	logFile, _ := os.Create(filepath.Join("logs", "appLogs.log"))
 	defer logFile.Close()
 	multi := io.MultiWriter(logFile, os.Stdout)
@@ -61,7 +62,7 @@ func main() {
 	log.Printf("Starting Discord...\n")
 	err := d.Start()
 	if err != nil {
-		log.Panicf("Could not instantiate Discord: %w", err)
+		log.Panic(fmt.Errorf("Could not instantiate Discord: %w", err))
 	}
 	defer d.Session.Close()
 	start(d)

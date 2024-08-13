@@ -406,7 +406,7 @@ func (d *Discord) ShowAllStrikes(s *discordgo.Session, i *discordgo.InteractionC
 func (d *Discord) DownloadLogs(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	logFile, err := os.Open(filepath.Join("logs", "appLogs.log"))
 	if err != nil {
-		log.Panicf("Could not open log files: %w", err)
+		log.Panic(fmt.Errorf("Could not open log files: %w", err))
 	}
 	defer logFile.Close()
 
@@ -426,6 +426,6 @@ func (d *Discord) DownloadLogs(s *discordgo.Session, i *discordgo.InteractionCre
 	})
 
 	if erro != nil {
-		log.Panicf("Could not send log dump: %w", err)
+		log.Panic(fmt.Errorf("Could not send log dump: %w", err))
 	}
 }
