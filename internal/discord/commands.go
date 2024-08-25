@@ -12,14 +12,7 @@ import (
 	"github.com/naurffxiv/moddingway/internal/enum"
 )
 
-// Kick attempts to kick the user specified user from the server the command was invoked in.
-// Fields:
-//
-//	user: 	User
-//	reason: string
-func (d *Discord) Kick(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
-}
 
 // Mute attempts to mute the user specified user from the server the command was invoked in.
 // Fields:
@@ -130,19 +123,6 @@ func (d *Discord) RemoveNickname(s *discordgo.Session, i *discordgo.InteractionC
 //	nickname:	string
 //	reason:		string
 func (d *Discord) SetNickname(s *discordgo.Session, i *discordgo.InteractionCreate) {
-
-}
-
-// Slowmode attempts to set the current channel to slowmode.
-// Fields:
-//
-//	duration:	string
-func (d *Discord) Slowmode(s *discordgo.Session, i *discordgo.InteractionCreate) {
-
-}
-
-// SlowmodeOff attempts to remove slowmode from the current channel.
-func (d *Discord) SlowmodeOff(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 }
 
@@ -305,14 +285,13 @@ func (d *Discord) Unexile(s *discordgo.Session, i *discordgo.InteractionCreate) 
 	exiledUser := optionMap["user"].UserValue(nil)
 
 	// Unexile user
-	err := d.UnexileUser(state, exiledUser.ID, optionMap["reason"].StringValue())
+	err := d.UnexileUser(state, exiledUser.ID)
 	if err != nil {
 		return
 	}
 	// DM user regarding the unexile, doesn't matter if DM fails
-	tempstr := fmt.Sprintf("You have been unexiled from `%v` for the following reason:\n> %v",
+	tempstr := fmt.Sprintf("You have been unexiled from `%v`.",
 		GuildName,
-		optionMap["reason"].StringValue(),
 	)
 	_ = d.SendDMToUser(state, exiledUser.ID, tempstr)
 
