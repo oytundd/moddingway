@@ -6,14 +6,15 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
 
+# test
 jobs:
   tag:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Create Tag
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git tag -a "v${{ github.run_number }}" -m "Release v${{ github.run_number }}"
-          git push origin "v${{ github.run_number }}"
+    - uses: actions/checkout@v2
+    - name: Set version number
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git tag -a "1.0.${{ github.run_number }}" -m "Release 1.0.${{ github.run_number }}"
+        git push origin "v${{ github.run_number }}"
