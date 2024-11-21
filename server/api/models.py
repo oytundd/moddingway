@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class User(models.Model):
     userid = models.IntegerField()
@@ -10,6 +11,7 @@ class User(models.Model):
     def __str__(self) -> str:
         return str(self.userid)
 
+
 class Exile(models.Model):
     exileid = models.IntegerField()
     userid = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -19,7 +21,8 @@ class Exile(models.Model):
     exilestats = models.IntegerField()
 
     def __str__(self) -> str:
-        return (f"User {self.userid} exiled for reason: \"{self.reason}\"")
+        return f'User {self.userid} exiled for reason: "{self.reason}"'
+
 
 class Strike(models.Model):
     strikeid = models.IntegerField()
@@ -28,4 +31,4 @@ class Strike(models.Model):
     createtimestamp = models.DateTimeField()
 
     def __str__(self) -> str:
-        return (f"User {self.userid} given strike for reason: \"{self.reason}\"")
+        return f'User {self.userid} given strike for reason: "{self.reason}"'
