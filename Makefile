@@ -1,16 +1,5 @@
-GOFMT=$(shell go env GOPATH)/bin/gofmt
-
 format:
-	@echo "Formatting Go code..."
-	@gofmt -s -w .
-
-start:
-	docker compose down
-	if [ "${DEBUG}" = true ]; then \
-		docker compose up --build; \
-	else \
-		docker compose up --build --detach; \
-	fi
+	python3 -m black .
 
 stop:
 	docker compose down
@@ -20,10 +9,6 @@ install:
 
 clean:
 	docker image prune -a
-
-test-build:
-	docker compose -f postgres.yml down
-	docker compose -f postgres.yml up --build
 
 python-build:
 	docker compose build python-app
@@ -35,4 +20,4 @@ python-run:
 database-run:
 	docker compose -f postgres.yml up -d
 
-.PHONY: format start stop install clean
+.PHONY: format stop install clean python-build python-run database-run

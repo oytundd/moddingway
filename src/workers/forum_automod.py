@@ -1,11 +1,9 @@
-from datetime import datetime, timezone, timedelta
-import discord
+from datetime import datetime, timezone
 import logging
-import asyncio
 from settings import get_settings
-from util import send_dm, create_interaction_embed_context
 from .helper import create_automod_embed, automod_thread
 from discord.ext import tasks
+from util import create_interaction_embed_context
 from discord.utils import snowflake_time
 
 settings = get_settings()
@@ -19,34 +17,65 @@ async def autodelete_threads(self):
         logger.error("Guild not found.")
         return
 
+    notifying_channel = guild.get_channel(settings.notify_channel_id)
+    if notifying_channel is None:
+        logger.error("Notifying channel not found.")
+        return
+
     for channel_id, duration in settings.automod_inactivity.items():
         num_removed = 0
         num_errors = 0
-        channel = guild.get_channel(channel_id)
-        if channel is None:
-            continue
+        try:
+            channel = guild.get_channel(channel_id)
+            if channel is None:
+                logger.error("Forum channel not found.")
+                continue
 
-        async for thread in channel.archived_threads(limit=None):
-            num_removed, num_errors = await automod_thread(
-                self, channel_id, thread, duration, num_removed, num_errors
-            )
+            async for thread in channel.archived_threads(limit=None):
+                num_removed, num_errors = await automod_thread(
+                    self,
+                    channel_id,
+                    thread,
+                    duration,
+                    num_removed,
+                    num_errors,
+                    notifying_channel,
+                )
 
-        for thread in channel.threads:
-            num_removed, num_errors = await automod_thread(
-                self, channel_id, thread, duration, num_removed, num_errors
-            )
+            for thread in channel.threads:
+                num_removed, num_errors = await automod_thread(
+                    self,
+                    channel_id,
+                    thread,
+                    duration,
+                    num_removed,
+                    num_errors,
+                    notifying_channel,
+                )
 
-        if num_removed > 0 or num_errors > 0:
-            logger.info(
-                f"Removed a total of {num_removed} threads from channel {channel_id}. {num_errors} failed removals."
-            )
-            async with create_automod_embed(
-                self,
-                channel_id,
-                num_removed,
-                num_errors,
-                datetime.now(timezone.utc),
+            if num_removed > 0 or num_errors > 0:
+                logger.info(
+                    f"Removed a total of {num_removed} threads from channel {channel_id}. {num_errors} failed removals."
+                )
+                async with create_automod_embed(
+                    self,
+                    channel_id,
+                    num_removed,
+                    num_errors,
+                    datetime.now(timezone.utc),
+                ):
+                    pass
+            else:
+                logger.info(
+                    f"No threads were marked for deletion in channel {channel_id}."
+                )
+        except Exception as e:
+            logger.error(e)
+            async with create_interaction_embed_context(
+                self.get_channel(settings.logging_channel_id),
+                user=self.user,
+                timestamp=datetime.now(timezone.utc),
+                description="Automod task failed to process channel <#{channel_id}>: {e}",
             ):
                 pass
-        else:
-            logger.info(f"No threads were marked for deletion in channel {channel_id}.")
+            continue
