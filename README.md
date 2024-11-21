@@ -31,3 +31,7 @@ Postgres-related information is configured in the environment variables instead 
 `DEBUG` must be set to `true` for testing.  
 Defaults are also set for `POSTGRES_PORT` (5432) and `POSTGRES_DB` (moddingway) if those two are not set.
 `INACTIVE_FORUM_CHANNEL_ID` and `INACTIVE_FORUM_DURATION` are optional. The relevant task will not run if those environment variables are not defined.
+
+### API
+
+Navigate to `/server/` and run migrations to create models with `python3 manage.py makemigrations` & `python3 manage.py migrate`, then the server can be started with `python3 manage.py runserver`.
