@@ -52,4 +52,4 @@ If you want to run the app in a container, you run the application via `make pyt
 
 ### API
 
-Navigate to `/server/` and run migrations to create models with `python3 manage.py makemigrations` & `python3 manage.py migrate`, then the server can be started with `python3 manage.py runserver`.
+The API can be run locally in a browser for testing. Running `make api-build` will build the API's models, after which the server can be started with `make api-run`.
