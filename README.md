@@ -52,4 +52,4 @@ If you want to run the app in a container, you run the application via `make pyt
 
 ### API
 
-The API can be run locally in a browser for testing. Running `make api-build` will build the API's models, after which the server can be started with `make api-run`.
+The API can be run locally in a browser for testing. For this, you will need to add the "API_KEY" environment variable. The dev key can be found in the development channels on the NAUR server. Running `make api-build` will build the API's models, after which the server can be started with `make api-run`.
