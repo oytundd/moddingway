@@ -29,6 +29,6 @@ class ModdingwayBot(Bot):
         logger.info("Starting registering commands")
         create_exile_commands(self)
         create_ban_commands(self)
-        create_bot_errors(self)
         create_slowmode_commands(self)
+        create_bot_errors(self)
         logger.info("Registering commands finished")
