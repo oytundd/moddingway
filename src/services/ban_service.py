@@ -9,7 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 async def ban_user(
-    invoking_member: discord.Member, user: discord.Member, reason: str
+    invoking_member: discord.Member,
+    user: discord.Member,
+    reason: str,
+    delete_messages: bool,
 ) -> Optional[Tuple[bool, bool, str]]:
     """Executes ban of user.
 
@@ -17,6 +20,7 @@ async def ban_user(
         invoking_member (discord.Member): The moderator initiating the ban.
         user (discord.Member): The user being banned.
         reason (str): Reason for the ban.
+        delete_messages (bool): Whether to delete the user's messages.
 
     Returns:
         Optional[Tuple[bool, bool, str]]: Result of the ban operation. Tuple contains:
@@ -43,7 +47,7 @@ async def ban_user(
     try:
         await send_dm(
             user,
-            f"You are being banned from the server for the following reason:\n> {reason}\n"
+            f"You are being banned from NA Ultimate Raiding - FFXIV for the following reason:\n> {reason}\n"
             "You may appeal this ban by contacting the moderators in 30 days.",
         )
         dm_state = True
@@ -51,7 +55,9 @@ async def ban_user(
         logger.error(f"Failed to send DM to {user.mention}: {e}")
 
     try:
-        await user.ban(reason=reason)
+        # Delete messages only if delete_messages is True
+        delete_days = 7 if delete_messages else 0
+        await user.ban(reason=reason, delete_message_days=delete_days)
         logger.info(f"Successfully banned {user.mention}")
         return (True, dm_state, f"Successfully banned {user.mention}.")
     except Exception as e:

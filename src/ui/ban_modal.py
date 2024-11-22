@@ -18,7 +18,18 @@ class BanModal(discord.ui.Modal):
         required=True,
     )
 
+    delete_messages = discord.ui.TextInput(
+        label="Delete Messages?",
+        style=discord.TextStyle.short,
+        placeholder='Type "Yes" to delete messages or "No" to keep them',
+        max_length=3,
+        required=True,
+    )
+
     async def on_submit(self, interaction: discord.Interaction):
+        delete_messages_flag = (
+            self.delete_messages.value.strip().lower() == "yes"
+        )  # Convert input to boolean
         async with create_response_context(interaction) as response_message:
             async with create_modal_embed(
                 interaction,
@@ -26,6 +37,14 @@ class BanModal(discord.ui.Modal):
                 user=self.user,
                 reason=self.reason.value,
             ) as logging_embed:
-                await ban_user(logging_embed, self.user, self.reason.value)
+                result = await ban_user(
+                    interaction.user, self.user, self.reason.value, delete_messages_flag
+                )
 
-                response_message.set_string(f"Successfully banned {self.user.mention}")
+                if result[0]:  # Ban was successful
+                    response_message.set_string(
+                        f"Successfully banned {self.user.mention}."
+                    )
+                else:  # Ban failed
+                    response_message.set_string(result[2])
+                    logging_embed.add_field(name="Error", value=result[2], inline=False)

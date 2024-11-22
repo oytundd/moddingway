@@ -15,16 +15,18 @@ def create_ban_commands(bot: Bot) -> None:
     @discord.app_commands.describe(
         user="User being banned",
         reason="Reason for ban",
+        delete_messages="Whether to delete the user's messages (default: False)",
     )
     async def ban(
         interaction: discord.Interaction,
         user: discord.Member,
         reason: str,
+        delete_messages: bool = False,  # Default to not deleting messages
     ):
         """Ban the specified user."""
         async with create_response_context(interaction) as response_message:
             (is_banned, is_dm_sent, result_description) = await ban_user(
-                interaction.user, user, reason
+                interaction.user, user, reason, delete_messages
             )
 
             if is_banned:  # ban succeeded
