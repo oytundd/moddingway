@@ -9,60 +9,55 @@ logger = logging.getLogger(__name__)
 
 
 async def ban_user(
-    user: discord.Member, reason: str
+    invoking_member: discord.Member, user: discord.Member, reason: str
 ) -> Optional[Tuple[bool, bool, str]]:
     """Executes ban of user.
 
     Args:
-        user (discord.Member): mention or "@"/user ID of the user being banned.
-        reason (str): description of ban reason. Length of reason must be less than 512 characters
+        invoking_member (discord.Member): The moderator initiating the ban.
+        user (discord.Member): The user being banned.
+        reason (str): Reason for the ban.
 
     Returns:
-        Optional[Tuple[bool, bool, str]]: tuple containing (ban_result,dm_state,result_description)
-            - ban_result (bool): Indicates whether the ban succeeded.
-            - dm_state (bool): Indicates whether the DM notification to the user succeeded.
-            - result_description (str): A message describing the status of the ban operation.
+        Optional[Tuple[bool, bool, str]]: Result of the ban operation. Tuple contains:
+            - bool: True if ban was successful, False otherwise.
+            - bool: True if DM was successfully sent, False otherwise.
+            - str: Description of the result of the ban operation
     """
-    if len(reason) < 512:
-        result_description = ""
-        dm_state = False
-        # attempt to send a DM to the user with the reason for the ban
-        try:
-            # TO DO: When the appeal process is implemented, add a link to the appeal process in the message.
-            await send_dm(
-                user,
-                f"You are being banned from NA Ultimate Raiding - FF XIV for the following reason: \n> {reason} "
-                "\nYou may appeal this ban by contacting the moderators of the server in 30 days.",
-            )
-            logger.info(f"Successfully sent dm to {user.mention}")
-            dm_state = True
-        except Exception as e:
-            logger.error(f"DM to {user.mention} due failed due to error: {e}")
-            dm_state = False
+    if len(reason) >= 512:
+        return (
+            False,
+            False,
+            f"Unable to ban {user.mention}: reason is too long (above 512 characters). Please shorten the ban reason.",
+        )
 
-        # attempt Ban
-        try:
-            await user.ban(reason=reason)
-            logger.info(f"Successfully banned {user.mention}")
-            ban_result = True
-        except Exception as e:
-            logger.error(f"Ban of {user.mention} failed due to error: {e}")
-            ban_result = False
+    # Ensure invoking_member has a higher role position than the target user.
+    if user.top_role >= invoking_member.top_role:
+        return (
+            False,
+            False,
+            f"Unable to ban {user.mention}: You cannot ban a user with an equal or higher role than yourself.",
+        )
 
-        if not ban_result and dm_state:  # ban fail dm succeed.
-            result_description = f"Unable to ban {user.mention}, please ban via discord built-in ban feature. A DM has been sent to {user.mention} with ban reason."
-        elif ban_result and not dm_state:  # ban succeed dm fail.
-            result_description = (
-                f"Successfully banned {user.mention} but DM failed to send."
-            )
-        elif ban_result and dm_state:  # full success
-            result_description = f"Successfully banned {user.mention} and DM has been sent with ban reason."
-        else:  # full failure
-            result_description = f"Unable to ban {user.mention} and unable to send DM. Please ban via discord built-in ban feature or try again later."
+    dm_state = False
+    try:
+        await send_dm(
+            user,
+            f"You are being banned from the server for the following reason:\n> {reason}\n"
+            "You may appeal this ban by contacting the moderators in 30 days.",
+        )
+        dm_state = True
+    except Exception as e:
+        logger.error(f"Failed to send DM to {user.mention}: {e}")
 
-    else:
-        # reason too large, ban action canceled.
-        result_description = f"Unable to ban: {user.mention}, reason given is too long (above 512 characters). Please shorten ban reason."
-        ban_result = False
-    # always return this.
-    return (ban_result, dm_state, result_description)
+    try:
+        await user.ban(reason=reason)
+        logger.info(f"Successfully banned {user.mention}")
+        return (True, dm_state, f"Successfully banned {user.mention}.")
+    except Exception as e:
+        logger.error(f"Failed to ban {user.mention}: {e}")
+        return (
+            False,
+            dm_state,
+            f"Failed to ban {user.mention}. Please try again or use Discord's built-in tools.",
+        )

@@ -23,7 +23,9 @@ def create_ban_commands(bot: Bot) -> None:
     ):
         """Ban the specified user."""
         async with create_response_context(interaction) as response_message:
-            (is_banned, is_dm_sent, result_description) = await ban_user(user, reason)
+            (is_banned, is_dm_sent, result_description) = await ban_user(
+                interaction.user, user, reason
+            )
 
             if is_banned:  # ban succeeded
                 if not is_dm_sent:  # dm failed
