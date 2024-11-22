@@ -34,7 +34,7 @@ class Strike(models.Model):
     userid = models.ForeignKey(User, on_delete=models.CASCADE)
     severity = models.IntegerField(default=0)
     reason = models.TextField()
-    createtimestamp = models.DateTimeField(default = timezone.now)
+    createtimestamp = models.DateTimeField(default=timezone.now)
     createdby = models.CharField(max_length=20, default="")
     lasteditedtimestamp = models.DateTimeField(default=timezone.now)
     lasteditedby = models.CharField(max_length=20, default="")

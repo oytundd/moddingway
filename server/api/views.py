@@ -18,7 +18,7 @@ def get_user(request):
                 "ismod": False,
                 "temporarypoints": 0,
                 "permanentpoints": 0,
-                "createtimestamp": datetime.datetime.now()
+                "createtimestamp": datetime.datetime.now(),
             }
         ).data
     )
