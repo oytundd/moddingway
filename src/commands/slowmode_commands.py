@@ -14,8 +14,8 @@ def create_slowmode_commands(bot: Bot) -> None:
     @bot.tree.command()
     @discord.app_commands.check(is_user_moderator)
     @discord.app_commands.describe(
-        channel="Channel name slowmode is being modified in",
         interval="The number of seconds desired between each message. Must be between 0 (off) and 21600 (6 hours).",
+        channel="Channel name slowmode is being modified in",
     )
     async def set_slowmode(
         interaction: discord.Interaction,

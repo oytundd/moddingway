@@ -7,8 +7,8 @@ logger = logging.getLogger(__name__)
 
 async def edit_slowmode(
     logging_embed: discord.Embed,
-    channel: discord.TextChannel,
     interval: int,
+    channel: discord.TextChannel,
 ) -> str:
     if interval < 0 or interval > 21600:
         error_message = "Interval must be between 0 and 21600 seconds"
