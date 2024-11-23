@@ -12,7 +12,7 @@ async def ban_user(
     invoking_member: discord.Member,
     user: discord.Member,
     reason: str,
-    delete_messages: bool,
+    delete_messages_flag: bool,
 ) -> Optional[Tuple[bool, bool, str]]:
     """Executes ban of user.
 
@@ -20,7 +20,7 @@ async def ban_user(
         invoking_member (discord.Member): The moderator initiating the ban.
         user (discord.Member): The user being banned.
         reason (str): Reason for the ban.
-        delete_messages (bool): Whether to delete the user's messages.
+        delete_messages_flag (bool): Whether to delete the user's messages.
 
     Returns:
         Optional[Tuple[bool, bool, str]]: Result of the ban operation. Tuple contains:
@@ -55,9 +55,11 @@ async def ban_user(
         logger.error(f"Failed to send DM to {user.mention}: {e}")
 
     try:
+        # We typically do NOT want to delete messages, as we want to preserve evidence.
+        # However, we may want to delete messages in cases where the user has posted inappropriate content or spam.
         # Delete messages only if delete_messages is True
         # 604800 seconds is the maximum value for delete_message_seconds, and is equivalent to 7 days.
-        delete_seconds = 604800 if delete_messages else 0
+        delete_seconds = 604800 if delete_messages_flag else 0
         await user.ban(reason=reason, delete_message_seconds=delete_seconds)
         logger.info(f"Successfully banned {user.mention}")
         return (True, dm_state, f"Successfully banned {user.mention}.")

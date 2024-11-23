@@ -15,34 +15,45 @@ def create_ban_commands(bot: Bot) -> None:
     @discord.app_commands.describe(
         user="User being banned",
         reason="Reason for ban",
-        delete_messages="Whether to delete the user's messages (default: False)",
+        delete_messages="Type 'Y' to delete messages or 'N' to keep them (default: 'N')",
     )
     async def ban(
         interaction: discord.Interaction,
         user: discord.Member,
         reason: str,
-        delete_messages: bool = False,  # Default to not deleting messages
+        delete_messages: str = "N",  # Default to 'N' for no message deletion
     ):
         """Ban the specified user."""
+        # Normalize and validate the input
+        delete_messages = delete_messages.strip().upper()
+        if delete_messages not in ["Y", "N"]:
+            await interaction.response.send_message(
+                "Invalid value for 'delete_messages'. Please enter 'Y' to delete messages or 'N' to keep them.",
+                ephemeral=True,
+            )
+            return
+
+        delete_messages_flag = delete_messages == "Y"  # Convert to boolean
         async with create_response_context(interaction) as response_message:
             (is_banned, is_dm_sent, result_description) = await ban_user(
-                interaction.user, user, reason, delete_messages
+                interaction.user, user, reason, delete_messages_flag
             )
 
-            if is_banned:  # ban succeeded
-                if not is_dm_sent:  # dm failed
-                    async with create_logging_embed(
-                        interaction, user=user, reason=reason, error=result_description
-                    ) as logging_embed:
-                        response_message.set_string(result_description)
-                else:  # ban succeeded, dm failed.
-                    async with create_logging_embed(
-                        interaction, user=user, reason=reason, result=result_description
-                    ) as logging_embed:
-                        response_message.set_string(result_description)
-            else:  # ban failed, dont create embed
-                response_message.set_string(result_description)
-        response_message.set_string(result_description)
+            if is_banned:  # Ban succeeded
+                async with create_logging_embed(
+                    interaction, user=user, reason=reason, result=result_description
+                ) as logging_embed:
+                    logging_embed.add_field(
+                        name="Messages Deleted",
+                        value="Yes" if delete_messages_flag else "No",
+                        inline=False,
+                    )
+                    response_message.set_string(result_description)
+            else:  # Ban failed
+                async with create_logging_embed(
+                    interaction, user=user, reason=reason, error=result_description
+                ) as logging_embed:
+                    response_message.set_string(result_description)
 
     @bot.tree.context_menu(name="Ban User")
     @discord.app_commands.check(is_user_moderator)
