@@ -19,17 +19,25 @@ class BanModal(discord.ui.Modal):
     )
 
     delete_messages = discord.ui.TextInput(
-        label="Delete Messages?",
+        label="Delete Messages? (Y/N)",
         style=discord.TextStyle.short,
-        placeholder='Type "Yes" to delete messages or "No" to keep them',
-        max_length=3,
+        placeholder='Type "Y" for Yes or "N" for No',
+        max_length=1,
         required=True,
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-        delete_messages_flag = (
-            self.delete_messages.value.strip().lower() == "yes"
-        )  # Convert input to boolean
+        delete_messages_value = (
+            self.delete_messages.value.strip().upper()
+        )  # Normalize input
+        if delete_messages_value not in ["Y", "N"]:
+            await interaction.response.send_message(
+                "Invalid input for 'Delete Messages'. Please enter 'Y' or 'N'.",
+                ephemeral=True,
+            )
+            return
+
+        delete_messages_flag = delete_messages_value == "Y"  # Convert to boolean
         async with create_response_context(interaction) as response_message:
             async with create_modal_embed(
                 interaction,

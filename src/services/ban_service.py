@@ -56,8 +56,9 @@ async def ban_user(
 
     try:
         # Delete messages only if delete_messages is True
-        delete_days = 7 if delete_messages else 0
-        await user.ban(reason=reason, delete_message_days=delete_days)
+        # 604800 seconds is the maximum value for delete_message_seconds, and is equivalent to 7 days.
+        delete_seconds = 604800 if delete_messages else 0
+        await user.ban(reason=reason, delete_message_seconds=delete_seconds)
         logger.info(f"Successfully banned {user.mention}")
         return (True, dm_state, f"Successfully banned {user.mention}.")
     except Exception as e:
