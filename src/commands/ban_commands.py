@@ -15,25 +15,27 @@ def create_ban_commands(bot: Bot) -> None:
     @discord.app_commands.describe(
         user="User being banned",
         reason="Reason for ban",
-        delete_messages="Type 'Y' to delete messages or 'N' to keep them (default: 'N')",
+        delete_messages="Type 'Yes' to delete messages or 'No' to keep them (default: 'No')",
     )
     async def ban(
         interaction: discord.Interaction,
         user: discord.Member,
         reason: str,
-        delete_messages: str = "N",  # Default to 'N' for no message deletion
+        delete_messages: str = "No",  # Default to 'No' for no message deletion
     ):
         """Ban the specified user."""
         # Normalize and validate the input
-        delete_messages = delete_messages.strip().upper()
-        if delete_messages not in ["Y", "N"]:
+        delete_messages = delete_messages.strip().capitalize()  # Handle capitalization
+        if delete_messages not in ["Yes", "No"]:
             await interaction.response.send_message(
-                "Invalid value for 'delete_messages'. Please enter 'Y' to delete messages or 'N' to keep them.",
+                "Invalid value for 'delete_messages'. Please enter 'Yes' to delete messages or 'No' to keep them.",
                 ephemeral=True,
             )
             return
 
-        delete_messages_flag = delete_messages == "Y"  # Convert to boolean
+        # Convert delete_messages to a boolean for ban logic
+        delete_messages_flag = delete_messages == "Yes"
+
         async with create_response_context(interaction) as response_message:
             (is_banned, is_dm_sent, result_description) = await ban_user(
                 interaction.user, user, reason, delete_messages_flag
@@ -45,7 +47,7 @@ def create_ban_commands(bot: Bot) -> None:
                     user=user,
                     reason=reason,
                     result=result_description,
-                    delete_messages_flag=delete_messages_flag,
+                    delete_messages_flag=delete_messages_flag,  # Pass as "Yes" or "No"
                 ) as logging_embed:
                     response_message.set_string(result_description)
             else:  # Ban failed

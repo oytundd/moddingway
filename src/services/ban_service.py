@@ -3,6 +3,7 @@ import logging
 from typing import Optional, Tuple
 from util import log_info_and_embed, send_dm
 from settings import get_settings
+from datetime import datetime, timedelta, timezone
 
 settings = get_settings()
 logger = logging.getLogger(__name__)
@@ -43,12 +44,19 @@ async def ban_user(
             f"Unable to ban {user.mention}: You cannot ban a user with an equal or higher role than yourself.",
         )
 
+    # Calculate the timestamp for 30 days from now
+    appeal_deadline = int((datetime.now(timezone.utc) + timedelta(days=30)).timestamp())
+
     dm_state = False
     try:
         await send_dm(
             user,
-            f"You are being banned from NA Ultimate Raiding - FFXIV for the following reason:\n> {reason}\n"
-            "You may appeal this ban by contacting the moderators in 30 days.",
+            f"Hello {user.display_name},\n\n"
+            "You are being informed that you have been **banned** from **NA Ultimate Raiding - FFXIV**.\n\n"
+            "**Reason for the ban:**\n"
+            f"> {reason}\n\n"
+            f"If you believe this ban was issued in error you can reach out to the Moderation Team. Otherwise, you may appeal this ban starting on <t:{appeal_deadline}:F>.\n\n"
+            "Please note that any further attempts to rejoin the server will be met with a permanent ban.\n\n",
         )
         dm_state = True
     except Exception as e:
