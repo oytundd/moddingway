@@ -2,7 +2,7 @@ import discord
 import logging
 from enums import StrikeSeverity
 from database import users_database
-from util import log_info_and_embed
+from util import log_info_and_embed, send_dm
 from database import strikes_database, users_database
 from database.models import Strike, User
 from datetime import datetime, timedelta
@@ -50,18 +50,22 @@ async def add_strike(
     log_info_and_embed(
         logging_embed,
         logger,
-        f"Strike {strike.strike_id} added and applied to user",
+        f"<@{user.id}> was given a strike with ID {strike.strike_id}, bringing them to {db_user.temporary_points + db_user.permanent_points} points. The resulting punishment was {punishment}",
     )
 
     punishment = await _apply_punishment(logging_embed, user, db_user)
+    logging_embed.add_field(name="Punishment", value=punishment)
 
-    # TODO in follow up PR, consider sending user a DM? Exile / ban covers those situations I think
-
-    log_info_and_embed(
-        logging_embed,
-        logger,
-        f"<@{user.id}> was given a strike, bringing them to {db_user.temporary_points + db_user.permanent_points} points. The resulting punishment was {punishment}",
-    )
+    # message user
+    try:
+        await send_dm(
+            user,
+            f"Your actions in NA Ultimate Raiding - FFXIV resulted in a {severity.name.lower()} strike against your account. This may have punitive actions",
+        )
+    except Exception as e:
+        log_info_and_embed(
+            logging_embed, logger, f"Failed to send DM to exiled user, {e}"
+        )
 
 
 MINOR_INFRACTION_POINTS = 1
@@ -91,17 +95,22 @@ async def _apply_punishment(
     total_points = db_user.temporary_points + db_user.permanent_points
 
     # TODO: known error, if an exiled user is given a strike, the follow up exile is not created
+    exile_reason = (
+        "Your actions were severe or frequent enough for you to receive this exile"
+    )
 
     if total_points >= 15:
         punishment = "permanent ban"
-        await ban_service.ban_user(user, "Accumulation of more than 15 points")
+        await ban_service.ban_user(
+            user, "Your strike were severe or frequent to be removed from the server"
+        )
     elif total_points >= 10:
         punishment = "2 week exile"
         await exile_service.exile_user(
             logging_embed,
             user,
             timedelta(weeks=2),
-            "Accumulation of more than 10 points",
+            exile_reason,
         )
     elif total_points >= 7:
         punishment = "1 week exile"
@@ -109,17 +118,17 @@ async def _apply_punishment(
             logging_embed,
             user,
             timedelta(weeks=1),
-            "Accumulation of more than 7 points",
+            exile_reason,
         )
     elif total_points >= 5:
         punishment = "3 day exile"
         await exile_service.exile_user(
-            logging_embed, user, timedelta(days=3), "Accumulation of more than 5 points"
+            logging_embed, user, timedelta(days=3), exile_reason
         )
     elif total_points >= 3:
         punishment = "1 day exile"
         await exile_service.exile_user(
-            logging_embed, user, timedelta(days=1), "Accumulation of more than 3 points"
+            logging_embed, user, timedelta(days=1), exile_reason
         )
     else:
         punishment = "nothing"
