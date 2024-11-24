@@ -24,4 +24,6 @@ def create_strikes_commands(bot: Bot) -> None:
                     logging_embed, user, severity, reason, interaction.user
                 )
 
-                response_message.set_string(f"Successfully added strike to  {user.mention}")
+                response_message.set_string(
+                    f"Successfully added strike to  {user.mention}"
+                )

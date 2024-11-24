@@ -1,6 +1,7 @@
 from . import DatabaseConnection
 from .models import Strike
 
+
 def add_strike(strike: Strike) -> int:
     conn = DatabaseConnection()
 

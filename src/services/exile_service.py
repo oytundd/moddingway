@@ -74,7 +74,9 @@ async def exile_user(
             logging_embed, logger, f"Failed to send DM to exiled user, {e}"
         )
 
-    log_info_and_embed(logging_embed, logger, f"<@{user.id}> was successfully exiled for {duration}")
+    log_info_and_embed(
+        logging_embed, logger, f"<@{user.id}> was successfully exiled for {duration}"
+    )
 
 
 async def unexile_user(
