@@ -114,7 +114,7 @@ async def unexile_user(
             logger,
             error_message,
         )
-        return error_message;
+        return error_message
 
     exile = exiles_database.get_user_active_exile(db_user.user_id)
 
