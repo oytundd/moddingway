@@ -41,13 +41,12 @@ def create_ban_commands(bot: Bot) -> None:
 
             if is_banned:  # Ban succeeded
                 async with create_logging_embed(
-                    interaction, user=user, reason=reason, result=result_description
+                    interaction,
+                    user=user,
+                    reason=reason,
+                    result=result_description,
+                    delete_messages_flag=delete_messages_flag,
                 ) as logging_embed:
-                    logging_embed.add_field(
-                        name="Messages Deleted",
-                        value="Yes" if delete_messages_flag else "No",
-                        inline=False,
-                    )
                     response_message.set_string(result_description)
             else:  # Ban failed
                 async with create_logging_embed(

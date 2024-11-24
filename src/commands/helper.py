@@ -10,7 +10,9 @@ settings = get_settings()
 logger = logging.getLogger(__name__)
 
 
-def create_logging_embed(interaction: discord.Interaction, **kwargs):
+def create_logging_embed(
+    interaction: discord.Interaction, delete_messages_flag=None, **kwargs
+):
     fields = [EmbedField("Action", f"/{interaction.command.name}")]
     if kwargs is not None:
         for key, value in kwargs.items():
@@ -21,6 +23,15 @@ def create_logging_embed(interaction: discord.Interaction, **kwargs):
                     fields.append(EmbedField(key.title(), f"<#{value}>"))
                 case _:
                     fields.append(EmbedField(key.title(), value))
+
+    # Add "Messages Deleted" field if delete_messages_flag is provided
+    if delete_messages_flag is not None:
+        fields.append(
+            EmbedField(
+                "Messages Deleted",
+                "Yes" if delete_messages_flag else "No",
+            )
+        )
 
     return create_interaction_embed_context(
         interaction.guild.get_channel(settings.logging_channel_id),
