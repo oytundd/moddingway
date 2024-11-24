@@ -41,6 +41,7 @@ async def add_strike(
         last_edited_by=author.id,
     )
     strike.strike_id = strikes_database.add_strike(strike)
+    logging_embed.set_footer(text=f"Strike ID: {strike.strike_id}")
 
     # increment user points, update
     db_user.last_infraction_timestamp = strike_timestamp
@@ -56,12 +57,6 @@ async def add_strike(
 
     punishment = await _apply_punishment(logging_embed, user, db_user, previous_points)
     logging_embed.add_field(name="Punishment", value=punishment)
-
-    log_info_and_embed(
-        logging_embed,
-        logger,
-        f"The resulting punishment was {punishment}",
-    )
 
     # message user
     try:
