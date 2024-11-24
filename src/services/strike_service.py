@@ -67,7 +67,7 @@ async def add_strike(
     try:
         await send_dm(
             user,
-            f"Your actions in NA Ultimate Raiding - FFXIV resulted in a {severity.name.lower()} strike against your account. This may have punitive actions",
+            f"Your actions in NA Ultimate Raiding - FFXIV resulted in a strike against your account. This may have punitive actions",
         )
     except Exception as e:
         log_info_and_embed(
