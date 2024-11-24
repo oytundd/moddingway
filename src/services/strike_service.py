@@ -44,17 +44,24 @@ async def add_strike(
 
     # increment user points, update
     db_user.last_infraction_timestamp = strike_timestamp
+    previous_points = db_user.get_strike_points()
     _apply_strike_point_penalty(db_user, severity)
     users_database.update_user_strike_points(db_user)
 
     log_info_and_embed(
         logging_embed,
         logger,
-        f"<@{user.id}> was given a strike with ID {strike.strike_id}, bringing them to {db_user.temporary_points + db_user.permanent_points} points. The resulting punishment was {punishment}",
+        f"<@{user.id}> was given a strike with ID {strike.strike_id}, bringing them to {db_user.get_strike_points()} points",
     )
 
-    punishment = await _apply_punishment(logging_embed, user, db_user)
+    punishment = await _apply_punishment(logging_embed, user, db_user, previous_points)
     logging_embed.add_field(name="Punishment", value=punishment)
+
+    log_info_and_embed(
+        logging_embed,
+        logger,
+        f"The resulting punishment was {punishment}",
+    )
 
     # message user
     try:
@@ -90,9 +97,12 @@ def _apply_strike_point_penalty(db_user: User, severity: StrikeSeverity):
 
 
 async def _apply_punishment(
-    logging_embed: discord.Embed, user: discord.Member, db_user: User
+    logging_embed: discord.Embed,
+    user: discord.Member,
+    db_user: User,
+    previous_points: int,
 ) -> str:
-    total_points = db_user.temporary_points + db_user.permanent_points
+    total_points = db_user.get_strike_points()
 
     # TODO: known error, if an exiled user is given a strike, the follow up exile is not created
     exile_reason = (
@@ -104,7 +114,7 @@ async def _apply_punishment(
         await ban_service.ban_user(
             user, "Your strike were severe or frequent to be removed from the server"
         )
-    elif total_points >= 10:
+    elif total_points >= 10 and previous_points < 10:
         punishment = "2 week exile"
         await exile_service.exile_user(
             logging_embed,
@@ -112,7 +122,7 @@ async def _apply_punishment(
             timedelta(weeks=2),
             exile_reason,
         )
-    elif total_points >= 7:
+    elif total_points >= 7 and previous_points < 7:
         punishment = "1 week exile"
         await exile_service.exile_user(
             logging_embed,
@@ -120,12 +130,12 @@ async def _apply_punishment(
             timedelta(weeks=1),
             exile_reason,
         )
-    elif total_points >= 5:
+    elif total_points >= 5 and previous_points < 5:
         punishment = "3 day exile"
         await exile_service.exile_user(
             logging_embed, user, timedelta(days=3), exile_reason
         )
-    elif total_points >= 3:
+    elif total_points >= 3 and previous_points < 3:
         punishment = "1 day exile"
         await exile_service.exile_user(
             logging_embed, user, timedelta(days=1), exile_reason
